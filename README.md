@@ -19,3 +19,10 @@ Rodar jobs
 Rodar testes
 
     ./vendor/bin/phpunit
+    
+
+No projeto temos Contas e Transferencias.
+
+Existem 2 tipos de contas: comum e lojista. 
+
+Centralizei a funcionalidade apenas na rota /transfer
