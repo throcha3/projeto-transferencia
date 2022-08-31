@@ -19,11 +19,12 @@ class TransactionServiceTest extends TestCase
      */
     public function should_allow_transaction_only_when_payer_is_common_account($type, $expectedResult)
     {
+        $transactionService = new TransactionService();
         $commonAccount =  Account::factory()->create([
             'type' => $type
         ]);
 
-        $transaction = TransactionService::isPayerTypeValid($commonAccount);
+        $transaction = $this->transactionService->isPayerTypeValid($commonAccount);
 
         $this->assertEquals($expectedResult, $transaction);
     }
@@ -53,7 +54,7 @@ class TransactionServiceTest extends TestCase
             'current_balance' => $currentBalance
         ]);
 
-        $transaction = TransactionService::payerHasEnoughBalance($commonAccount->current_balance, 500);
+        $transaction = $this->transactionService->payerHasEnoughBalance($commonAccount->current_balance, 500);
 
         $this->assertEquals($expectedResult, $transaction);
     }

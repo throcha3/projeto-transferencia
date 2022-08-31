@@ -13,18 +13,25 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TransactionService
 {
+    private AccountService $accountService;
+
+    public function __construct()
+    {
+        $this->accountService = new AccountService();
+    }
+
     /**
      * Execute all processes of transfering money
      *
      * @param  \App\Http\Requests\StoreTransactionRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public static function makeTransfer(array $transaction)
+    public function makeTransfer(array $transaction)
     {
         DB::beginTransaction();
 
         try {
-            self::validateTransactionRules($transaction);
+            $this->validateTransactionRules($transaction);
 
             $transaction = Transaction::create([
                 'payer_id' => $transaction['payer_id'],
@@ -32,7 +39,7 @@ class TransactionService
                 'value' => $transaction['value'],
             ]);
 
-            AccountService::movementAccountValuesFromTransaction($transaction);
+            $this->accountService->movementAccountValuesFromTransaction($transaction);
 
             DB::commit();
         } catch (\Throwable $th) {
@@ -49,14 +56,14 @@ class TransactionService
      * @param array $transaction
      * @return void
      */
-    public static function validateTransactionRules($transaction)
+    public function validateTransactionRules($transaction)
     {
         $payerAccount = Account::find($transaction['payer_id']);
 
         if (
-            ! self::isPayerTypeValid($payerAccount)
-            || ! self::payerHasEnoughBalance($payerAccount->current_balance, $transaction['value'])
-            || ! self::externalAuthorizer()
+            ! $this->isPayerTypeValid($payerAccount)
+            || ! $this->payerHasEnoughBalance($payerAccount->current_balance, $transaction['value'])
+            || ! $this->externalAuthorizer()
         ) {
             throw new TransferOutOfRulesException('Transaction not allowed');
         }
@@ -69,7 +76,7 @@ class TransactionService
      * @return boolean
      * @throws Exception
      */
-    public static function isPayerTypeValid(Account $payerAccount)
+    public function isPayerTypeValid(Account $payerAccount)
     {
         if (! $payerAccount->isAllowedToBePayer($payerAccount->type)) {
             return false;
@@ -86,7 +93,7 @@ class TransactionService
      * @return boolean
      * @throws Exception
      */
-    public static function payerHasEnoughBalance($payerCurrentBalance, $transactionValue)
+    public function payerHasEnoughBalance($payerCurrentBalance, $transactionValue)
     {
         if($payerCurrentBalance - $transactionValue < 0) {
             return false;
@@ -100,7 +107,7 @@ class TransactionService
      *
      * @return boolean
      */
-    public static function externalAuthorizer()
+    public function externalAuthorizer()
     {
         $response = Http::get(Account::URL_EXTERNAL_AUTHORIZER);
         return $response->status() == 200
