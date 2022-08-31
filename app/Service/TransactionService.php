@@ -33,7 +33,7 @@ class TransactionService
             ]);
 
             AccountService::movementAccountValuesFromTransaction($transaction);
-            SendTransactionNotification::dispatch($transaction);
+
             DB::commit();
         } catch (\Throwable $th) {
             DB::rollBack();
