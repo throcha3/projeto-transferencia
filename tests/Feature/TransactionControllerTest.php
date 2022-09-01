@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
+use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -35,6 +36,18 @@ class TransactionControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
+
+        $commonAccount = $commonAccount->find($commonAccount->getKey());
+        $storeKeeperAccount = $storeKeeperAccount->find($storeKeeperAccount->getKey());
+
+        $this->assertEquals(185, $commonAccount->current_balance);
+        $this->assertEquals(1646.3, $storeKeeperAccount->current_balance);
+
+        $transaction = Transaction::first();
+
+        $this->assertEquals($commonAccount->id, $transaction->payer_id);
+        $this->assertEquals($storeKeeperAccount->id, $transaction->payee_id);
+        $this->assertEquals(15, $transaction->value);
     }
 
     /**
