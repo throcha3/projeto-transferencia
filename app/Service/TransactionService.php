@@ -6,6 +6,7 @@ use App\Exceptions\TransferOutOfRulesException;
 use App\Jobs\SendTransactionNotification;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Repository\TransactionRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -18,6 +19,7 @@ class TransactionService
     public function __construct()
     {
         $this->accountService = new AccountService();
+        $this->transactionRepository = new TransactionRepository();
     }
 
     /**
@@ -33,13 +35,9 @@ class TransactionService
         try {
             $this->validateTransactionRules($transaction);
 
-            $transaction = Transaction::create([
-                'payer_id' => $transaction['payer_id'],
-                'payee_id' => $transaction['payee_id'],
-                'value' => $transaction['value'],
-            ]);
+            $transactionModel = $this->transactionRepository->createTransaction($transaction);
 
-            $this->accountService->movementAccountValuesFromTransaction($transaction);
+            $this->accountService->movementAccountValuesFromTransaction($transactionModel);
 
             DB::commit();
         } catch (\Throwable $th) {

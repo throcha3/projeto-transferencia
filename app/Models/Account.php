@@ -19,6 +19,15 @@ class Account extends Model
         self::TYPE_COMMON
     ];
 
+    protected $fillable = [
+        'type',
+        'name',
+        'email',
+        'password',
+        'document',
+        'current_balance'
+    ];
+
     public function transactionsAsPayer()
     {
         return $this->hasMany(Transaction::class,'payer_id');
