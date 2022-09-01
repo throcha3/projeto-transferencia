@@ -19,6 +19,7 @@ class SendTransactionNotification implements ShouldQueue
 
     public $tries = 99;
     public $maxExceptions = 99;
+    public $backoff = [30, 120, 300];
 
     protected Transaction $transaction;
     /**
@@ -42,7 +43,7 @@ class SendTransactionNotification implements ShouldQueue
 
         if ($response->status() <> 201) {
             throw new Exception('Failed to send Payee notification!');
-            return $this->release(300);
+            return $this->release();
         }
 
         return true;
